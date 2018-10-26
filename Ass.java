@@ -23,12 +23,29 @@ class GFG {
 }
 
 class SymbolTable{
-    public int Ssr=0;
+    public String Ssr="";
     public String Sname = "";
     public String SAddress="";
 
+    public String[][] SymTbl = new String[5][3];
+
+    public int getSsr() {
+        for (int i = 0; i < SymTbl.length; i++) {
+            if (SymTbl[i][0] == null) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
 
+        public void display_SymTbl() {
+        System.out.println("\n\tSYMBOL TABLE\n");
+
+        for (int i = 0; i < SymTbl.length; i++) {
+            System.out.println("Sr No: "+SymTbl[i][0]+"\tData: "+SymTbl[i][1]);
+        }
+    }
 }
 
 class LiteralTable{
@@ -37,7 +54,24 @@ class LiteralTable{
     public String LAddress="";
     public int[] pool = new int[10];
 
+    public String[][] LitTbl = new String[5][3];
 
+    public int getLsr() {
+        for (int i = 0; i < LitTbl.length; i++) {
+            if (LitTbl[i][0] == null) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void display_LitTbl() {
+        System.out.println("\n\tLiteral TABLE\n");
+
+        for (int i = 0; i < LitTbl.length; i++) {
+            System.out.println("Sr No: "+LitTbl[i][0]+"\tData: "+LitTbl[i][1]);
+        }
+    }
 
 }
 
@@ -46,16 +80,26 @@ class functions {
     private int PC=0;
     public int indexTarget = 0;
     public String Address = "0000";
-    public String[][] target = new String[20][2];
+    public String[][] target = new String[5][3];
 
     public void setPC(int x) {
         this.PC=x;
     }
+    public int getPC(){
+        return this.PC;
+    }
+
+
+                                        //OPCODES////
 
     public String[] op = new String[]{"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011",
                 "1100", "1101", "1111"};
     public String[] opName = new String[]{"CLA", "LAC", "SAC", "ADD", "SUB", "BRZ", "BRN", "BRP", "INP", "DSP", "MUL", "DIV", "STP",
                 "DS", "DC"};
+
+
+
+//******************************************************************\\
 
     public void passOne (String[][] in){
 
@@ -67,18 +111,21 @@ class functions {
         }
         int tempe=0;
         while (tempe<in.length) {
+            setPC(getPC()+1);
             if (in[tempe].length == 1) {
                 lengthOne(in[tempe]);
             } else if (in[tempe].length == 2) {
-               // lengthTwo(in[tempe]);
-            } else if (in[tempe].length == 3) {
-                //lengthThree(in[tempe]);
+                lengthTwo(in[tempe]);
             }
+//            else if (in[tempe].length == 3) {
+//                //lengthThree(in[tempe]);
+//            }
             tempe++;
         }
     }
- //****************************************************\\
-    //WHEN THE INPUT INSTRUCTION IS ONE_LENGTH LONG//
+
+ //*****************************************************************************\\
+        //WHEN THE INPUT INSTRUCTION IS     ONE_LENGTH     LONG//
 
     public void lengthOne(String[] s) {
         if (s[0].equals("CLA")) {
@@ -136,16 +183,61 @@ class functions {
             Address=b.addBinary(Address, "1");
             }
 
-            else {
-            //agar koi nhi hai to!
-            System.out.println("KOi nhi tha!!");
-        }
-
     }
 
- //****************************************************\\
-    //WHEN THE INPUT INSTRUCTION IS TWO_LENGTH LONG//
-    //public void
+
+ //*******************************************************************\\
+           //WHEN THE INPUT INSTRUCTION IS    TWO_LENGTH    LONG//
+
+    public void lengthTwo(String[] s) {
+        SymbolTable sym = new SymbolTable();
+        LiteralTable lit = new LiteralTable();
+
+
+
+        for (int i = 0; i < opName.length; i++) {
+            if (s[0].equals(opName[i])) {           //If opcode
+
+                target[indexTarget][0] = Address;
+                target[indexTarget][1] = op[i];
+                indexTarget+=1;
+                GFG b = new GFG();
+                Address=b.addBinary(Address,"1");
+                //If First is an Opcode and second is a Symbol.
+                if ( (s[1].charAt(0) >= 65 && s[1].charAt(0) <= 90)|| ( s[1].charAt(0) >= 97 && s[1].charAt(0) <= 122) ) {
+                    int flag=0;
+                    for (int j = 0; j < sym.SymTbl.length; j++) {
+                        if (s[1] != sym.SymTbl[j][1]) {
+                            flag=1;
+                        }
+                    }
+                    if (flag == 1) {
+                        int temp = sym.getSsr();
+
+                        sym.SymTbl[temp][0] = Integer.toString(temp);
+                        sym.SymTbl[temp][1] = s[1];
+                    }
+                } else if (s[1].charAt(0) == '=') {
+                    int temp1 = lit.getLsr();
+                    lit.LitTbl[temp1][0] = Integer.toString(temp1);
+                    lit.LitTbl[temp1][1] = s[1];
+
+                }
+            }
+            else if(s[1].equals(opName[i])) {               //If first is not an opcode
+                                                    //Case 1 - X LAC
+
+                target[indexTarget][0] = Address;
+                target[indexTarget][1] = op[i];
+                indexTarget+=1;
+                GFG b = new GFG();
+                Address=b.addBinary(Address,"1");
+
+
+            }
+
+        }
+    }
 
 
 
@@ -173,7 +265,7 @@ public class Ass {
 
         //Input Data//
         String [] [] input = new String[][] {
-                {"LAC"}, {"STP"}
+                {"LAC"}, {"STP"}, {"LAC", "I"}, {"ADD", "J"}
 //                { "LAC", "I"},
 //                { "ADD", "J"},
 //                { "SAC", "INTER"},
@@ -188,6 +280,10 @@ public class Ass {
         };
         f.passOne(input);
         f.display();
+        SymbolTable sym = new SymbolTable();
+        LiteralTable lit = new LiteralTable();
+        sym.display_SymTbl();;
+        lit.display_LitTbl();
 
     }
 }

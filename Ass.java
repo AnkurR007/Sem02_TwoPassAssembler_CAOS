@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.*;
 
 class GFG {
@@ -38,14 +39,32 @@ class SymbolTable{
         return -1;
     }
 
+    public void add_SymTbl(String s1, String s2) {
+//        System.out.println("ymbol table Test");
+//        System.out.println("Symbol["+getSsr()+"][0]- "+ SymTbl[getSsr()][0]);
+//        System.out.println("Symbol["+getSsr()+"][1]- "+ SymTbl[getSsr()][1]);
+//        System.out.println(s1);
+        this.SymTbl[getSsr()][0] = s1;
+        this.SymTbl[getSsr()-1][1] = s2;
+//        System.out.println("UPDATING.....");
+//        System.out.println("Symbol["+(getSsr()-1)+"][0]- "+ SymTbl[getSsr()-1][0]);
+//        System.out.println("Symbol["+(getSsr()-1)+"][1]- "+ SymTbl[getSsr()-1][1]);
 
-        public void display_SymTbl() {
+    }
+
+    public void display_SymTbl() {
         System.out.println("\n\tSYMBOL TABLE\n");
 
         for (int i = 0; i < SymTbl.length; i++) {
             System.out.println("Sr No: "+SymTbl[i][0]+"\tData: "+SymTbl[i][1]);
         }
     }
+
+    public String[][] table() {
+        return SymTbl;
+    }
+
+
 }
 
 class LiteralTable{
@@ -65,12 +84,28 @@ class LiteralTable{
         return -1;
     }
 
+    public void add_LitTbl(String s1, String s2) {
+//        System.out.println("Litbol table Test");
+//        System.out.println("Symbol["+getLsr()+"][0]- "+ LitTbl[getLsr()][0]);
+//        System.out.println("Symbol["+getLsr()+"][1]- "+ LitTbl[getLsr()][1]);
+
+        this.LitTbl[getLsr()][0] = s1;
+        this.LitTbl[getLsr()-1][1] = s2;
+//        System.out.println("UPDATING.....");
+//        System.out.println("Symbol["+(getLsr()-1)+"][0]- "+ LitTbl[getLsr()-1][0]);
+//        System.out.println("Symbol["+(getLsr()-1)+"][1]- "+ LitTbl[getLsr()-1][1]);
+    }
+
     public void display_LitTbl() {
         System.out.println("\n\tLiteral TABLE\n");
 
         for (int i = 0; i < LitTbl.length; i++) {
             System.out.println("Sr No: "+LitTbl[i][0]+"\tData: "+LitTbl[i][1]);
         }
+    }
+
+    public String[][] table(){
+        return LitTbl;
     }
 
 }
@@ -81,6 +116,8 @@ class functions {
     public int indexTarget = 0;
     public String Address = "0000";
     public String[][] target = new String[5][3];
+    SymbolTable sym = new SymbolTable();
+    LiteralTable lit = new LiteralTable();
 
     public void setPC(int x) {
         this.PC=x;
@@ -102,6 +139,7 @@ class functions {
 //******************************************************************\\
 
     public void passOne (String[][] in){
+
 
         if (in[0][0].equalsIgnoreCase("START")) {
             setPC(Integer.parseInt(in[0][1]));
@@ -190,8 +228,7 @@ class functions {
            //WHEN THE INPUT INSTRUCTION IS    TWO_LENGTH    LONG//
 
     public void lengthTwo(String[] s) {
-        SymbolTable sym = new SymbolTable();
-        LiteralTable lit = new LiteralTable();
+
 
 
 
@@ -204,7 +241,7 @@ class functions {
                 GFG b = new GFG();
                 Address=b.addBinary(Address,"1");
                 //If First is an Opcode and second is a Symbol.
-                if ( (s[1].charAt(0) >= 65 && s[1].charAt(0) <= 90)|| ( s[1].charAt(0) >= 97 && s[1].charAt(0) <= 122) ) {
+                if ( (s[1].charAt(0) >= 65 && s[1].charAt(0) <= 90)|| ( s[1].charAt(0) >= 97 && s[1].charAt(0) <= 122)  ) {
                     int flag=0;
                     for (int j = 0; j < sym.SymTbl.length; j++) {
                         if (s[1] != sym.SymTbl[j][1]) {
@@ -213,14 +250,16 @@ class functions {
                     }
                     if (flag == 1) {
                         int temp = sym.getSsr();
-
-                        sym.SymTbl[temp][0] = Integer.toString(temp);
-                        sym.SymTbl[temp][1] = s[1];
+                        System.out.println("Symbol: "+s[1]+"\ttemp:"+(temp+1));
+//                        sym.SymTbl[temp][0] = Integer.toString(temp);
+//                        sym.SymTbl[temp][1] = s[1];
+                        sym.add_SymTbl(Integer.toString(temp+1),s[1]);
                     }
                 } else if (s[1].charAt(0) == '=') {
                     int temp1 = lit.getLsr();
-                    lit.LitTbl[temp1][0] = Integer.toString(temp1);
-                    lit.LitTbl[temp1][1] = s[1];
+//                    lit.LitTbl[temp1][0] = Integer.toString(temp1+1);
+//                    lit.LitTbl[temp1][1] = s[1];
+                    lit.add_LitTbl(Integer.toString(temp1+1),s[1]);
 
                 }
             }
@@ -240,7 +279,13 @@ class functions {
     }
 
 
+    public void Fsymtbl() {
+        sym.display_SymTbl();
+    }
 
+    public void Flittbl() {
+        lit.display_LitTbl();
+    }
 
 
 
@@ -249,7 +294,7 @@ class functions {
         for (int i = 0; i < target.length; i++) {
             System.out.println("Addresses: "+ target[i][0] +"\tOpcode: "+target[i][1]);
         }
-        System.out.println("");
+        System.out.println();
     }
 }
 
@@ -257,6 +302,8 @@ class functions {
 public class Ass {
     public static void main(String[] args) {
         functions f = new functions();
+//        SymbolTable sym = new SymbolTable();
+//        LiteralTable lit = new LiteralTable();
         String[] s = new String[]{"CLA"};
         String[] s2 = new String[]{"LAC"};
 //        f.lengthOne(s);
@@ -265,8 +312,7 @@ public class Ass {
 
         //Input Data//
         String [] [] input = new String[][] {
-                {"LAC"}, {"STP"}, {"LAC", "I"}, {"ADD", "J"}
-//                { "LAC", "I"},
+               { "LAC", "I"}
 //                { "ADD", "J"},
 //                { "SAC", "INTER"},
 //                { "LAC", "K"},
@@ -280,10 +326,8 @@ public class Ass {
         };
         f.passOne(input);
         f.display();
-        SymbolTable sym = new SymbolTable();
-        LiteralTable lit = new LiteralTable();
-        sym.display_SymTbl();;
-        lit.display_LitTbl();
+        f.Fsymtbl();
+        f.Flittbl();
 
     }
 }
